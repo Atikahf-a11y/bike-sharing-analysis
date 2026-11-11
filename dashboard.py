@@ -60,7 +60,7 @@ season_tersedia = [
 
 hari_tersedia = [
     tipe for tipe in URUTAN_HARI
-    if tipe in day_df["tipe_hari"].dropna().unique()
+    if tipe in day_df["dteday"].dropna().unique()
 ]
 
 yr_pilihan = st.sidebar.multiselect(
@@ -107,7 +107,7 @@ else:
 df = day_df[
     day_df["yr"].isin(yr_pilihan)
     & day_df["season"].isin(season_pilihan)
-    & day_df["tipe_hari"].isin(tipe_pilihan)
+    & day_df["dteday"].isin(tipe_pilihan)
     & (day_df["dteday"].dt.date >= tanggal_awal)
     & (day_df["dteday"].dt.date <= tanggal_akhir)
 ].copy()
@@ -190,7 +190,7 @@ st.plotly_chart(fig1, use_container_width=True)
 st.subheader("02 — Komposisi Pengguna Berdasarkan Jenis Hari")
 
 komposisi = (
-    df.groupby("tipe_hari")[["casual", "registered"]]
+    df.groupby("dteday")[["casual", "registered"]]
     .sum()
     .reindex(URUTAN_HARI)
     .dropna(how="all")
@@ -213,7 +213,7 @@ komposisi["Registered"] = (
 )
 
 komposisi = komposisi.melt(
-    id_vars=["tipe_hari"],
+    id_vars=["dteday"],
     value_vars=["Casual", "Registered"],
     var_name="Jenis Pengguna",
     value_name="Persentase (%)"
@@ -222,7 +222,7 @@ komposisi = komposisi.melt(
 fig2 = px.bar(
     komposisi,
     x="Persentase (%)",
-    y="tipe_hari",
+    y="dteday",
     color="Jenis Pengguna",
     orientation="h",
     barmode="stack",
@@ -232,11 +232,11 @@ fig2 = px.bar(
         "Registered": WARNA_REGISTERED
     },
     category_orders={
-        "tipe_hari": URUTAN_HARI,
+        "dteday": URUTAN_HARI,
         "Jenis Pengguna": ["Casual", "Registered"]
     },
     labels={
-        "tipe_hari": "Jenis Hari",
+        "dteday": "Jenis Hari",
         "Persentase (%)": "Persentase dari Total Penyewaan (%)",
         "Jenis Pengguna": "Jenis Pengguna"
     }
@@ -275,7 +275,7 @@ st.plotly_chart(fig2, use_container_width=True)
 st.subheader("03 — Rata-rata Penyewaan per Jenis Pengguna")
 
 tipe_df = (
-    df.groupby("tipe_hari")
+    df.groupby("dteday")
     .agg(
         jumlah_hari=("cnt", "size"),
         rata2_casual=("casual", "mean"),
