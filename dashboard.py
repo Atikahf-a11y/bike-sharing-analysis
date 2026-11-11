@@ -34,7 +34,7 @@ URUTAN_PERMINTAAN = ["Rendah", "Sedang", "Tinggi"]
 @st.cache_data
 def load_data():
     df = pd.read_csv(DATA_PATH, parse_dates=["dteday"])
-    df["tahun"] = pd.to_numeric(df["tahun"], errors="coerce")
+    df["yr"] = pd.to_numeric(df["yr"], errors="coerce")
     return df
 
 
@@ -51,7 +51,7 @@ st.caption(
 # SIDEBAR FILTER
 st.sidebar.title("Filter Data")
 
-tahun_tersedia = sorted(day_df["tahun"].dropna().unique().tolist())
+yr_tersedia = sorted(day_df["yr"].dropna().unique().tolist())
 
 musim_tersedia = [
     musim for musim in URUTAN_MUSIM
@@ -63,10 +63,10 @@ hari_tersedia = [
     if tipe in day_df["tipe_hari"].dropna().unique()
 ]
 
-tahun_pilihan = st.sidebar.multiselect(
-    "Tahun",
-    options=tahun_tersedia,
-    default=tahun_tersedia
+yr_pilihan = st.sidebar.multiselect(
+    "yr",
+    options=yr_tersedia,
+    default=yr_tersedia
 )
 
 musim_pilihan = st.sidebar.multiselect(
@@ -105,7 +105,7 @@ else:
 
 # FILTER DATA
 df = day_df[
-    day_df["tahun"].isin(tahun_pilihan)
+    day_df["yr"].isin(yr_pilihan)
     & day_df["musim"].isin(musim_pilihan)
     & day_df["tipe_hari"].isin(tipe_pilihan)
     & (day_df["dteday"].dt.date >= tanggal_awal)
@@ -144,7 +144,7 @@ tren = (
     df.groupby("dteday", as_index=False)
     .agg(
         total_penyewaan=("cnt", "sum"),
-        tahun=("tahun", "first")
+        yr=("yr", "first")
     )
     .sort_values("dteday")
 )
@@ -153,7 +153,7 @@ fig1 = px.line(
     tren,
     x="dteday",
     y="total_penyewaan",
-    color="tahun",
+    color="yr",
     color_discrete_map={
         2011: "#9ECAE1",
         2012: "#08519C"
@@ -161,7 +161,7 @@ fig1 = px.line(
     labels={
         "dteday": "Tanggal",
         "total_penyewaan": "Jumlah Penyewaan",
-        "tahun": "Tahun"
+        "yr": "yr"
     }
 )
 
@@ -178,7 +178,7 @@ fig1.update_traces(
 fig1.update_layout(
     height=370,
     hovermode="closest",
-    legend_title_text="Tahun",
+    legend_title_text="yr",
     margin=dict(l=10, r=10, t=20, b=10),
     yaxis=dict(rangemode="tozero")
 )
@@ -421,24 +421,24 @@ st.plotly_chart(fig4, use_container_width=True)
 # GRAFIK 5: PERTUMBUHAN 2011 KE 2012
 st.subheader("05 — Pertumbuhan Penyewaan dari 2011 ke 2012")
 
-tahun_musim = (
-    df.groupby(["musim", "tahun"])["cnt"]
+yr_musim = (
+    df.groupby(["musim", "yr"])["cnt"]
     .mean()
     .unstack()
     .reindex(URUTAN_MUSIM)
 )
 
-if 2011 in tahun_musim.columns and 2012 in tahun_musim.columns:
-    tahun_musim["pertumbuhan_%"] = (
+if 2011 in yr_musim.columns and 2012 in yr_musim.columns:
+    yr_musim["pertumbuhan_%"] = (
         (
-            tahun_musim[2012]
-            / tahun_musim[2011].replace(0, float("nan"))
+            yr_musim[2012]
+            / yr_musim[2011].replace(0, float("nan"))
             - 1
         ) * 100
     )
 
     pertumbuhan = (
-        tahun_musim["pertumbuhan_%"]
+        yr_musim["pertumbuhan_%"]
         .dropna()
         .reset_index()
     )
@@ -485,12 +485,12 @@ if 2011 in tahun_musim.columns and 2012 in tahun_musim.columns:
             "Belum ada data yang cukup untuk menghitung pertumbuhan per musim."
         )
 
-    # RATA-RATA KESELURUHAN PER TAHUN
-    rata_tahun = df.groupby("tahun")["cnt"].mean()
+    # RATA-RATA KESELURUHAN PER yr
+    rata_yr = df.groupby("yr")["cnt"].mean()
 
-    if 2011 in rata_tahun.index and 2012 in rata_tahun.index:
-        rata_2011 = rata_tahun.loc[2011]
-        rata_2012 = rata_tahun.loc[2012]
+    if 2011 in rata_yr.index and 2012 in rata_yr.index:
+        rata_2011 = rata_yr.loc[2011]
+        rata_2012 = rata_yr.loc[2012]
 
         pertumbuhan_total = (
             (rata_2012 / rata_2011 - 1) * 100
@@ -503,8 +503,8 @@ if 2011 in tahun_musim.columns and 2012 in tahun_musim.columns:
         c.metric("Pertumbuhan", f"{pertumbuhan_total:+.1f}%")
 else:
     st.info(
-        "Grafik pertumbuhan membutuhkan data tahun 2011 dan 2012 "
-        "sekaligus. Pilih kedua tahun pada filter."
+        "Grafik pertumbuhan membutuhkan data yr 2011 dan 2012 "
+        "sekaligus. Pilih kedua yr pada filter."
     )
 
 
@@ -513,7 +513,7 @@ st.subheader("06 — Tingkat Permintaan Menurut Musim")
 
 st.caption(
     "Persentase hari pada setiap tingkat permintaan. "
-    "Kategori mengikuti hasil binning per tahun pada notebook."
+    "Kategori mengikuti hasil binning per yr pada notebook."
 )
 
 pivot_musim = pd.crosstab(
