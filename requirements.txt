@@ -1,5 +1,3 @@
-Daftar Library python yang digunakan
-
 streamlit
 pandas
 plotly
