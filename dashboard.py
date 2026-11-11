@@ -18,14 +18,14 @@ DATA_PATH = Path(__file__).parent / "main_data.csv"
 WARNA_CASUAL = "#FF7F0E"
 WARNA_REGISTERED = "#1F77B4"
 
-WARNA_Season = {
+WARNA_season = {
     "Dingin": "#9ECAE1",
     "Semi": "#74C476",
     "Panas": "#FDAE6B",
     "Gugur": "#B39DDB"
 }
 
-URUTAN_Season = ["Dingin", "Semi", "Panas", "Gugur"]
+URUTAN_season = ["Dingin", "Semi", "Panas", "Gugur"]
 URUTAN_HARI = ["Hari Kerja", "Libur/Akhir Pekan"]
 URUTAN_PERMINTAAN = ["Rendah", "Sedang", "Tinggi"]
 
@@ -53,9 +53,9 @@ st.sidebar.title("Filter Data")
 
 yr_tersedia = sorted(day_df["yr"].dropna().unique().tolist())
 
-Season_tersedia = [
-    Season for Season in URUTAN_Season
-    if Season in day_df["Season"].dropna().unique()
+season_tersedia = [
+    season for season in URUTAN_season
+    if season in day_df["season"].dropna().unique()
 ]
 
 hari_tersedia = [
@@ -69,10 +69,10 @@ yr_pilihan = st.sidebar.multiselect(
     default=yr_tersedia
 )
 
-Season_pilihan = st.sidebar.multiselect(
-    "Season",
-    options=Season_tersedia,
-    default=Season_tersedia
+season_pilihan = st.sidebar.multiselect(
+    "season",
+    options=season_tersedia,
+    default=season_tersedia
 )
 
 tipe_pilihan = st.sidebar.multiselect(
@@ -106,7 +106,7 @@ else:
 # FILTER DATA
 df = day_df[
     day_df["yr"].isin(yr_pilihan)
-    & day_df["Season"].isin(Season_pilihan)
+    & day_df["season"].isin(season_pilihan)
     & day_df["tipe_hari"].isin(tipe_pilihan)
     & (day_df["dteday"].dt.date >= tanggal_awal)
     & (day_df["dteday"].dt.date <= tanggal_akhir)
@@ -362,11 +362,11 @@ fig3.update_layout(
 st.plotly_chart(fig3, use_container_width=True)
 
 
-# GRAFIK 4: RATA-RATA PENYEWAAN BERDASARKAN Season
-st.subheader("04 — Rata-rata Penyewaan Berdasarkan Season")
+# GRAFIK 4: RATA-RATA PENYEWAAN BERDASARKAN season
+st.subheader("04 — Rata-rata Penyewaan Berdasarkan season")
 
-Season_df = (
-    df.groupby("Season", as_index=False)
+season_df = (
+    df.groupby("season", as_index=False)
     .agg(
         jumlah_hari=("cnt", "size"),
         rata2_harian=("cnt", "mean"),
@@ -374,24 +374,24 @@ Season_df = (
     )
 )
 
-Season_df["Season"] = pd.Categorical(
-    Season_df["Season"],
-    categories=URUTAN_Season,
+season_df["season"] = pd.Categorical(
+    season_df["season"],
+    categories=URUTAN_season,
     ordered=True
 )
 
-Season_df = Season_df.sort_values("Season")
+season_df = season_df.sort_values("season")
 
 fig4 = px.bar(
-    Season_df,
-    x="Season",
+    season_df,
+    x="season",
     y="rata2_harian",
-    color="Season",
+    color="season",
     text="rata2_harian",
-    color_discrete_map=WARNA_Season,
-    category_orders={"Season": URUTAN_Season},
+    color_discrete_map=WARNA_season,
+    category_orders={"season": URUTAN_season},
     labels={
-        "Season": "Season",
+        "season": "season",
         "rata2_harian": "Rata-rata Penyewaan per Hari"
     }
 )
@@ -401,7 +401,7 @@ fig4.update_traces(
     textposition="outside",
     cliponaxis=False,
     hovertemplate=(
-        "Season: %{x}<br>"
+        "season: %{x}<br>"
         "Rata-rata Penyewaan: %{y:,.1f} per hari"
         "<extra></extra>"
     )
@@ -421,42 +421,42 @@ st.plotly_chart(fig4, use_container_width=True)
 # GRAFIK 5: PERTUMBUHAN 2011 KE 2012
 st.subheader("05 — Pertumbuhan Penyewaan dari 2011 ke 2012")
 
-yr_Season = (
-    df.groupby(["Season", "yr"])["cnt"]
+yr_season = (
+    df.groupby(["season", "yr"])["cnt"]
     .mean()
     .unstack()
-    .reindex(URUTAN_Season)
+    .reindex(URUTAN_season)
 )
 
-if 2011 in yr_Season.columns and 2012 in yr_Season.columns:
-    yr_Season["pertumbuhan_%"] = (
+if 2011 in yr_season.columns and 2012 in yr_season.columns:
+    yr_season["pertumbuhan_%"] = (
         (
-            yr_Season[2012]
-            / yr_Season[2011].replace(0, float("nan"))
+            yr_season[2012]
+            / yr_season[2011].replace(0, float("nan"))
             - 1
         ) * 100
     )
 
     pertumbuhan = (
-        yr_Season["pertumbuhan_%"]
+        yr_season["pertumbuhan_%"]
         .dropna()
         .reset_index()
     )
 
-    pertumbuhan.columns = ["Season", "Pertumbuhan (%)"]
+    pertumbuhan.columns = ["season", "Pertumbuhan (%)"]
 
     if not pertumbuhan.empty:
         fig5 = px.bar(
             pertumbuhan,
             x="Pertumbuhan (%)",
-            y="Season",
+            y="season",
             orientation="h",
             text="Pertumbuhan (%)",
-            color="Season",
-            color_discrete_map=WARNA_Season,
-            category_orders={"Season": URUTAN_Season},
+            color="season",
+            color_discrete_map=WARNA_season,
+            category_orders={"season": URUTAN_season},
             labels={
-                "Season": "Season",
+                "season": "season",
                 "Pertumbuhan (%)": "Pertumbuhan"
             }
         )
@@ -466,7 +466,7 @@ if 2011 in yr_Season.columns and 2012 in yr_Season.columns:
             textposition="outside",
             cliponaxis=False,
             hovertemplate=(
-                "Season: %{y}<br>"
+                "season: %{y}<br>"
                 "Pertumbuhan: %{x:.1f}%"
                 "<extra></extra>"
             )
@@ -482,7 +482,7 @@ if 2011 in yr_Season.columns and 2012 in yr_Season.columns:
         st.plotly_chart(fig5, use_container_width=True)
     else:
         st.info(
-            "Belum ada data yang cukup untuk menghitung pertumbuhan per Season."
+            "Belum ada data yang cukup untuk menghitung pertumbuhan per season."
         )
 
     # RATA-RATA KESELURUHAN PER yr
@@ -508,24 +508,24 @@ else:
     )
 
 
-# GRAFIK 6: TINGKAT PERMINTAAN MENURUT Season
-st.subheader("06 — Tingkat Permintaan Menurut Season")
+# GRAFIK 6: TINGKAT PERMINTAAN MENURUT season
+st.subheader("06 — Tingkat Permintaan Menurut season")
 
 st.caption(
     "Persentase hari pada setiap tingkat permintaan. "
     "Kategori mengikuti hasil binning per yr pada notebook."
 )
 
-pivot_Season = pd.crosstab(
-    df["Season"],
+pivot_season = pd.crosstab(
+    df["season"],
     df["kategori_permintaan"],
     normalize="index"
 ) * 100
 
-pivot_Season = (
-    pivot_Season
+pivot_season = (
+    pivot_season
     .reindex(
-        index=URUTAN_Season,
+        index=URUTAN_season,
         columns=URUTAN_PERMINTAAN,
         fill_value=0
     )
@@ -533,20 +533,20 @@ pivot_Season = (
 )
 
 fig6 = px.imshow(
-    pivot_Season,
+    pivot_season,
     text_auto=".1f",
     aspect="auto",
     color_continuous_scale="YlGnBu",
     labels={
         "x": "Tingkat Permintaan",
-        "y": "Season",
+        "y": "season",
         "color": "Persentase Hari (%)"
     }
 )
 
 fig6.update_traces(
     hovertemplate=(
-        "Season: %{y}<br>"
+        "season: %{y}<br>"
         "Tingkat Permintaan: %{x}<br>"
         "Persentase Hari: %{z:.1f}%"
         "<extra></extra>"
