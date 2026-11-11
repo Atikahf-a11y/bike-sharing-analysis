@@ -1,0 +1,8 @@
+Daftar Library python yang digunakan
+
+streamlit
+pandas
+plotly
+numpy
+matplotlib
+seaborn
